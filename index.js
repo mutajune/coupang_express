@@ -9,6 +9,63 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended : true}));
 
 let respond;
+
+// coupang main_post
+app.get('/main_post', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = 'SELECT A.sno, A.post_name, A.post_mark, A.part, A.banner, A.product, C.banner_name, C.banner_description, C.banner_href, C.banner_mark, C.banner_img, B.name, B.list_image, B.delivery, B.price, B.href, B.scope, B.discount, B.review, B.option, B.category FROM main_post AS A LEFT JOIN product AS B ON A.product = B.sno LEFT JOIN banner AS C ON A.banner = c.sno'
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
+// coupang tag
+app.get('/tag', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = 'SELECT A.sno, A.tag, B.title_img , A.category, B.name FROM tag AS A LEFT JOIN category AS B ON A.category = B.sno'
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
+// coupang product
+app.get('/product', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = 'SELECT A.sno, A.scope, A.list_image , A.name, A.review , A.price, B.delivery , B.delivery_img FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno'
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
+// coupang_marketplace sign_up
+app.post('/marketplace/sign_up', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const pw = req.body.pw;
+  const id = req.body.id;
+  const name = req.body.name;
+  const phone = req.body.phone;
+  const e_mail = req.body.e_mail;
+  res.redirect("http://localhost:3001/");
+
+  console.log(id,pw,name,phone,e_mail)
+ 
+  db.query("insert into seller (pw, id, `name`, phone, e_mail ) VALUES " + `( '${pw}', '${id}', '${name}','${phone}','${e_mail}') `)
+})
+
+
+
+
+
+// -------------------------------------------------------
 app.get('/', async function (req, res, next) {
   let conn = await db.getConnection(async conn => conn);
   var query = "SELECT * FROM user";
@@ -74,21 +131,6 @@ app.get('/user/list', async function (req, res) {
 //   res.redirect("http://localhost:3001/");
 // })
 
-//5-3 post registration2
-app.post('/user/registration', async function (req, res) {
-  const pw = req.body.pw;
-  const id = req.body.id;
-  const name = req.body.name;
-  const birth = req.body.birth;
-  const gender = req.body.gender;
-  const phone = req.body.phone;
-  const e_mail = req.body.e_mail;
-  const nickname = req.body.nickname;
-  const introduction = req.body.introduction;
-
-  db.query("insert into `user` (pw, id, `name`, birth, gender, phone_number, e_mail, nickname, rating, point) VALUES " + `( '${pw}', '${id}', '${name}', ${birth}, '${gender}', '${phone}', '${e_mail}', '${nickname}' , 'f' , 0) `)
-  res.redirect("http://localhost:3001/");
-})
 
 // 6번 produt
 app.get('/produt', async function (req, res) {
