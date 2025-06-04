@@ -15,7 +15,7 @@ app.get('/main_post', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = 'SELECT A.sno, A.post_name, A.post_mark, A.part, A.banner, A.product, A.b_key , A.p_key, C.banner_name, C.banner_description, C.banner_href, C.banner_mark, C.banner_img, B.name, B.list_image, B.delivery, B.price, B.href, B.scope, B.discount, B.review, B.option, B.category, D.delivery_img FROM main_post AS A LEFT JOIN product AS B ON A.product = B.sno LEFT JOIN banner AS C ON A.banner = c.sno LEFT JOIN delivery AS D ON B.delivery = D.sno'
+  var query = 'SELECT A.sno, A.post_name, A.post_mark, A.part, A.banner, A.product, A.b_key , A.p_key, C.banner_name, C.banner_description, C.banner_href, C.banner_mark, C.banner_category, C.banner_img, B.name, B.list_image, B.delivery, B.price, B.href, B.scope, B.discount, B.review, B.option, B.category, D.delivery_img FROM main_post AS A LEFT JOIN product AS B ON A.product = B.sno LEFT JOIN banner AS C ON A.banner = c.sno LEFT JOIN delivery AS D ON B.delivery = D.sno'
   const [rows, fields] = await conn.query(query);
   conn.release();
 
@@ -28,6 +28,18 @@ app.get('/tag', async function (req, res) {
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
   var query = 'SELECT A.sno, A.tag, B.title_img , A.category, B.name FROM tag AS A LEFT JOIN category AS B ON A.category = B.sno'
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
+// coupang category
+app.get('/category', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = 'SELECT A.sno, A.name, A.category, A.title_img, A.class FROM category AS A'
   const [rows, fields] = await conn.query(query);
   conn.release();
 
@@ -60,8 +72,6 @@ app.post('/marketplace/sign_up', async function (req, res) {
  
   db.query("insert into seller (pw, id, `name`, phone, e_mail ) VALUES " + `( '${pw}', '${id}', '${name}','${phone}','${e_mail}') `)
 })
-
-
 
 
 
