@@ -39,7 +39,7 @@ app.get('/category', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = 'SELECT A.sno, A.name, A.category, A.title_img, A.class FROM category AS A'
+  var query = 'SELECT A.sno, A.name, A.category, A.title_img, A.class, A.bt_banner FROM category AS A'
   const [rows, fields] = await conn.query(query);
   conn.release();
 
@@ -72,8 +72,6 @@ app.post('/marketplace/sign_up', async function (req, res) {
  
   db.query("insert into seller (pw, id, `name`, phone, e_mail ) VALUES " + `( '${pw}', '${id}', '${name}','${phone}','${e_mail}') `)
 })
-
-
 
 // -------------------------------------------------------
 app.get('/', async function (req, res, next) {
