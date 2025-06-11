@@ -46,18 +46,6 @@ app.get('/category', async function (req, res) {
   res.json(rows)
 })
 
-// coupang product
-app.get('/product', async function (req, res) {
-  res.header("Access-Control-Allow-Origin","*");
-  const data = req.query;
-  let conn = await db.getConnection(async conn => conn);
-  var query = 'SELECT A.sno, A.scope, A.list_image , A.name, A.review , A.price, B.delivery , B.delivery_img FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno'
-  const [rows, fields] = await conn.query(query);
-  conn.release();
-
-  res.json(rows)
-})
-
 // coupang_marketplace sign_up
 app.post('/marketplace/sign_up', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
@@ -71,6 +59,18 @@ app.post('/marketplace/sign_up', async function (req, res) {
   console.log(id,pw,name,phone,e_mail)
  
   db.query("insert into seller (pw, id, `name`, phone, e_mail ) VALUES " + `( '${pw}', '${id}', '${name}','${phone}','${e_mail}') `)
+})
+
+// coupang product
+app.get('/product', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT A.sno, A.scope, A.list_image, A.name, A.review , A.price, B.delivery , B.delivery_img FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno WHERE A.name like '%${data.search}%'`
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
 })
 
 // -------------------------------------------------------
