@@ -73,6 +73,37 @@ app.get('/product', async function (req, res) {
   res.json(rows)
 })
 
+// coupang log-in
+app.get('/coupang/user/login', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT e_mail, pw , sno , nickname FROM user WHERE e_mail='${data.e_mail}' AND pw='${data.pw}' `;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+ if(rows.length  === 1) {
+  res.json([{ sno : rows[0].sno , nickname: rows[0].nickname , is_success: true }])
+ } else {
+  res.json({is_success: false})
+ }
+
+
+})
+
+// coupang_marketplace sign_up
+app.post('/coupang/sign_up', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const e_mail = req.body.e_mail;
+  const pw = req.body.pw;
+  const name = req.body.name;
+  const phone = req.body.phone;
+  res.redirect("http://localhost:3001/");
+
+  console.log(pw,name,phone,e_mail)
+ 
+  db.query("insert into user (e_mail, pw,`name`, phone) VALUES " + `( '${e_mail}' , '${pw}', '${name}','${phone}') `)
+})
+
 // -------------------------------------------------------
 app.get('/', async function (req, res, next) {
   let conn = await db.getConnection(async conn => conn);
@@ -214,23 +245,23 @@ app.get('/search/option_name', async function (req, res) {
 
 
 
-// 5번 log-in
-app.get('/user/login', async function (req, res) {
-  res.header("Access-Control-Allow-Origin","*");
-  const data = req.query;
-  let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT id, pw , sno , nickname FROM user WHERE id='${data.id}' AND pw='${data.pw}' `;
-  const [rows, fields] = await conn.query(query);
-  conn.release();
+// // 5번 log-in
+// app.get('/user/login', async function (req, res) {
+//   res.header("Access-Control-Allow-Origin","*");
+//   const data = req.query;
+//   let conn = await db.getConnection(async conn => conn);
+//   var query = `SELECT id, pw , sno , nickname FROM user WHERE id='${data.id}' AND pw='${data.pw}' `;
+//   const [rows, fields] = await conn.query(query);
+//   conn.release();
 
- if(rows.length  === 1) {
-  res.json([{ sno : rows[0].sno , nickname: rows[0].nickname , is_success: true }])
- } else {
-  res.json({is_success: false})
- }
+//  if(rows.length  === 1) {
+//   res.json([{ sno : rows[0].sno , nickname: rows[0].nickname , is_success: true }])
+//  } else {
+//   res.json({is_success: false})
+//  }
 
 
-})
+// })
 
 // 2번 API : /user/list/user login_user data
 app.get('/user/login/user', async function (req, res) {
