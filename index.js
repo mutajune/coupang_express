@@ -73,6 +73,17 @@ app.get('/product', async function (req, res) {
   res.json(rows)
 })
 
+app.get('/product/detall', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT A.sno, A.scope, A.list_image, A.name, A.review , A.price, B.delivery , B.delivery_img, C.category FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno WHERE A.name like '${data.detall}'`
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
 // coupang log-in
 app.get('/coupang/user/login', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
@@ -103,6 +114,8 @@ app.post('/coupang/sign_up', async function (req, res) {
  
   db.query("insert into user (e_mail, pw,`name`, phone) VALUES " + `( '${e_mail}' , '${pw}', '${name}','${phone}') `)
 })
+
+
 
 // -------------------------------------------------------
 app.get('/', async function (req, res, next) {
