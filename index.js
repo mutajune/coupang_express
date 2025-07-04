@@ -77,7 +77,7 @@ app.get('/product/detall', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT A.sno, A.scope, A.list_image, A.name, A.review , A.price, B.delivery , B.delivery_img, C.category FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno WHERE A.name like '${data.detall}'`
+  var query = `SELECT A.sno, A.scope, A.list_image, A.name, A.review , A.price, B.delivery , B.delivery_img, C.category , D.notation_name1,D.notation_valvue1, D.notation_name2,D.notation_valvue2, D.notation_name3,D.notation_valvue3, D.notation_name4,D.notation_valvue4, D.notation_name5,D.notation_valvue5, D.notation_name6,D.notation_valvue6, D.notation_name7,D.notation_valvue7, D.notation_name8,D.notation_valvue8, D.notation_name9,D.notation_valvue9, D.notation_name10,D.notation_valvue10, D.notation_name11,D.notation_valvue11, D.notation_name12,D.notation_valvue12, D.notation_name13,D.notation_valvue13, A.d_img1, A.d_img2, A.d_img3, A.d_img4, A.d_img5, A.d_img6 FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno LEFT JOIN notation AS D ON A.notation = D.sno WHERE A.name like '${data.detall}'`
   const [rows, fields] = await conn.query(query);
   conn.release();
 
