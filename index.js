@@ -15,7 +15,7 @@ app.get('/main_post', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = 'SELECT A.sno, A.post_name, A.post_mark, A.part, A.banner, A.product, A.b_key , A.p_key, C.banner_name, C.banner_description, C.banner_href, C.banner_mark, C.banner_category, C.banner_img, B.name, B.list_image, B.delivery, B.price, B.href, B.scope, B.discount, B.review, B.option, B.category, D.delivery_img FROM main_post AS A LEFT JOIN product AS B ON A.product = B.sno LEFT JOIN banner AS C ON A.banner = c.sno LEFT JOIN delivery AS D ON B.delivery = D.sno'
+  var query = 'SELECT A.sno, A.post_name, A.post_mark, A.part, A.banner, A.product, A.b_key , A.p_key, C.banner_name, C.banner_description, C.banner_href, C.banner_mark, C.banner_category, C.banner_img, B.name, B.list_image, B.delivery, B.price, B.href, B.scope, B.discount, B.review, B.category, D.delivery_img FROM main_post AS A LEFT JOIN product AS B ON A.product = B.sno LEFT JOIN banner AS C ON A.banner = c.sno LEFT JOIN delivery AS D ON B.delivery = D.sno'
   const [rows, fields] = await conn.query(query);
   conn.release();
 
@@ -77,7 +77,27 @@ app.get('/product/detall', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT A.sno, A.scope, A.list_image, A.name, A.review , A.price, B.delivery , B.delivery_img, C.category , D.notation_name1,D.notation_valvue1, D.notation_name2,D.notation_valvue2, D.notation_name3,D.notation_valvue3, D.notation_name4,D.notation_valvue4, D.notation_name5,D.notation_valvue5, D.notation_name6,D.notation_valvue6, D.notation_name7,D.notation_valvue7, D.notation_name8,D.notation_valvue8, D.notation_name9,D.notation_valvue9, D.notation_name10,D.notation_valvue10, D.notation_name11,D.notation_valvue11, D.notation_name12,D.notation_valvue12, D.notation_name13,D.notation_valvue13, A.d_img1, A.d_img2, A.d_img3, A.d_img4, A.d_img5, A.d_img6 FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno LEFT JOIN notation AS D ON A.notation = D.sno WHERE A.name like '${data.detall}'`
+  var query = `SELECT A.sno, A.scope, A.list_image, A.list_image1, A.list_image2, A.list_image3, A.list_image4, A.list_image5,
+  A.list_image6, A.list_image7, A.name, A.standard, A.unit, A.number, A.review , A.price, A.coupang_price, A.real_price, A.discount,
+  B.delivery,B.delivery_img, C.category, D.notation_name1,D.notation_valvue1, D.notation_name2,D.notation_valvue2, D.notation_name3,
+  D.notation_valvue3, D.notation_name4, D.notation_valvue4, D.notation_name5,D.notation_valvue5, D.notation_name6,D.notation_valvue6,
+  D.notation_name7,D.notation_valvue7, D.notation_name8,D.notation_valvue8, D.notation_name9,D.notation_valvue9, D.notation_name10,
+  D.notation_valvue10, D.notation_name11, D.notation_valvue11, D.notation_name12,D.notation_valvue12, D.notation_name13,
+  D.notation_valvue13, A.d_img1, A.d_img2, A.d_img3, A.d_img4, A.d_img5, A.d_img6, D.delivery_method , D.delivery_company,
+  D.delivery_cost, D.Bundled_not, D.delivery_period, D.exchange_cost, D.exchange_date, D.limit_thing1,D.limit_thing2, D.limit_thing3,
+  D.limit_thing4, D.limit_thing5, D.seller_mutual, D.seller_workplace, D.seller_email, D.seller_phone, D.seller_report, D.seller_business, D.seller_safety
+  FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno LEFT JOIN notation AS D ON A.notation = D.sno WHERE A.name like '${data.detall}'`
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
+app.get('/product/detall/option', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM   `option` AS A LEFT JOIN product AS B ON  B.sno = A.option_product WHERE B.name like" + `'${data.option}'`
   const [rows, fields] = await conn.query(query);
   conn.release();
 
