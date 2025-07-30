@@ -104,6 +104,39 @@ app.get('/product/detall/option', async function (req, res) {
   res.json(rows)
 })
 
+// coupang shopping_cart
+app.get('/shopping_cart', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM shopping_cart AS A LEFT JOIN `user` AS B ON A.user_sno = B.sno LEFT JOIN product AS C ON A.product_sno = C.sno WHERE user_sno =" + `'${data.users}'`
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows)
+})
+
+// shopping_cart_delete
+app.get('/cart_delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `DELETE FROM shopping_cart WHERE product_sno=${data.sno} AND user_sno= ${data.user}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// shopping_cart_add
+app.get('/cart_add', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `insert into shopping_cart (user_sno, product_sno, amount) VALUES ( ${data.user} , ${data.product}, ${data.amount})`
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
 // coupang log-in
 app.get('/coupang/user/login', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
@@ -120,6 +153,29 @@ app.get('/coupang/user/login', async function (req, res) {
 
 
 })
+
+// coupang arrive
+app.get('/coupang/user/arrive', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT DISTINCT user_sno, order_arrive FROM `order` " + `WHERE order_arrive != 0 and user_sno='${data.users}' ` ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// coupang order
+app.get('/coupang/user/order', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM `order` " + `WHERE user_sno='${data.users}' ` ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
 
 // coupang_marketplace sign_up
 app.post('/coupang/sign_up', async function (req, res) {
