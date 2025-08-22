@@ -6,6 +6,7 @@ const express = require("express");
 const app = express();
 
 const bodyParser = require("body-parser");
+const { log } = require("console");
 app.use(bodyParser.urlencoded({extended : true}));
 
 let respond;
@@ -109,7 +110,7 @@ app.get('/shopping_cart', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = "SELECT * FROM shopping_cart AS A LEFT JOIN `user` AS B ON A.user_sno = B.sno LEFT JOIN product AS C ON A.product_sno = C.sno WHERE user_sno =" + `'${data.users}'`
+  var query = "SELECT * FROM shopping_cart AS A LEFT JOIN `user` AS B ON A.user_sno = B.user_sno LEFT JOIN product AS C ON A.product_sno = C.sno LEFT JOIN delivery AS D ON C.delivery = D.sno WHERE A.user_sno =" + `'${data.users}'`
   const [rows, fields] = await conn.query(query);
   conn.release();
   res.json(rows)
@@ -142,11 +143,11 @@ app.get('/coupang/user/login', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT e_mail, pw , sno , nickname FROM user WHERE e_mail='${data.e_mail}' AND pw='${data.pw}' `;
+  var query = `SELECT * FROM user WHERE user_e_mail='${data.e_mail}' AND user_pw='${data.pw}' `;
   const [rows, fields] = await conn.query(query);
   conn.release();
  if(rows.length  === 1) {
-  res.json([{ sno : rows[0].sno , nickname: rows[0].nickname , is_success: true }])
+  res.json([{ user_sno : rows[0].user_sno , user_nickname: rows[0].user_nickname , user_name: rows[0].user_name, user_phone: rows[0].user_phone , user_point: rows[0].user_point , user_e_mail: rows[0].user_e_mail ,is_success: true }])
  } else {
   res.json({is_success: false})
  }
@@ -176,6 +177,15 @@ app.get('/coupang/user/order', async function (req, res) {
   res.json(rows);
 })
 
+// coupang add order
+app.post('/coupang/user/add_order', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  res.redirect("http://localhost:3001/");
+  datas = JSON.parse(req.body.list)
+  for ($i=0; $i<datas.length; $i++) {
+  db.query("insert into `order` (user_sno, product_sno, order_price,  order_cnt) VALUES" + `( ${datas[$i].user_sno} , ${datas[$i].product_sno}, ${datas[$i].real_price * datas[$i].amount}, ${datas[$i].amount})`)
+  }
+})
 
 // coupang_marketplace sign_up
 app.post('/coupang/sign_up', async function (req, res) {
@@ -188,12 +198,127 @@ app.post('/coupang/sign_up', async function (req, res) {
 
   console.log(pw,name,phone,e_mail)
  
-  db.query("insert into user (e_mail, pw,`name`, phone) VALUES " + `( '${e_mail}' , '${pw}', '${name}','${phone}') `)
+  db.query("insert into user (user_e_mail, user_pw,`user_name`, user_phone ) VALUES " + `( '${e_mail}' , '${pw}', '${name}','${phone}') `)
+})
+
+// coupon_list
+app.get('/coupang/coupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM coupon AS A` ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// coupon_uselist
+app.get('/coupang/usecoupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM usecoupon AS A Left Join coupon AS B On A.coupon_sno = B.coupon_sno WHERE A.user_sno = ${data.user}` ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+  console.log(rows)
+})
+
+// coupon_uselist_add
+app.post('/coupang/usecoupon_add', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  // res.redirect("http://localhost:3001/");
+  console.log(req.body)
+  db.query(`insert into usecoupon (coupon_sno, user_sno, usecoupon_use) VALUES (${req.body.e} , ${req.body.usernum}, 'Y')`)
+})
+
+// coupon_uselist_use
+app.post('/coupang/usecoupon_use', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  // res.redirect("http://localhost:3001/");
+  console.log(req.body)
+  db.query(`UPDATE usecoupon SET usecoupon_use = 'N' WHERE user_sno=${req.body.usernum} AND coupon_sno=${req.body.couponset}`)
+})
+
+// add_point
+app.post('/add_point', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  // res.redirect("http://localhost:3001/");
+  console.log(req.body)
+  db.query("UPDATE `user`" +  `SET user_point = ${req.body.add} WHERE user_sno = ${req.body.usernum}`)
+})
+
+// check adit
+app.get('/adit/check', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM user WHERE user_pw='${data.pw}' AND user_e_mail='${data.e_mail}' `;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+ if(rows.length  === 1) {
+  res.json([{is_success: true }])
+ } else {
+  res.json({is_success: false})
+ }
 })
 
 
 
+
+
+
+
+
+
+
+
+
+// usecoupon
+// app.post('/coupang/coupon', async function (req, res) {
+//   res.header("Access-Control-Allow-Origin","*");
+//   const data = req.query;
+//   const num = req.body.num;
+//   db.query(`SELECT * FROM coupon AS A WHERE A.coupon_num = ${num} and A.coupon_use = 'Y'`)
+//   const [rows, fields] = await conn.query(query);
+//   conn.release();
+
+//   if(rows[0] != "") {
+//     app.get('/coupang/usecoupon', async function (req, res) {
+//       res.header("Access-Control-Allow-Origin","*");
+//       db.query(`SELECT * FROM usecoupon AS A LEFT JOIN coupon AS B ON A.coupon_sno = B.coupon_num WHERE A.user_sno = ${data.user} and A.coupon_sno = ${rows[0].coupon_sno}`)
+//       const [newrows, newfields] = await conn.query(query);
+//       conn.release();
+
+//       if(newrows[0] == ""){
+//         app.post('/coupang/usecoupon_add', async function (req, res) {
+//           res.header("Access-Control-Allow-Origin","*");
+//           res.redirect("http://localhost:3001/");
+
+//           db.query(`insert into usecoupon (coupon_sno, user_sno) VALUES ( ${rows[0].coupon_sno} ,  ${data.user})`)
+//         })
+
+//       } else {
+//         alert("이미 사용된 쿠폰입니다.")
+//       }
+//     })
+//   } else {
+//     res.redirect("http://localhost:3001/");
+//     alert("유효하지 않은 번호입니다")
+//   }
+
+// })
+
+
+
+
+
+
+
+
+
 // -------------------------------------------------------
+
 app.get('/', async function (req, res, next) {
   let conn = await db.getConnection(async conn => conn);
   var query = "SELECT * FROM user";
