@@ -11,6 +11,39 @@ app.use(bodyParser.urlencoded({extended : true}));
 
 let respond;
 
+// 암호화 복호화
+const cryptojs = require("crypto-js");
+
+const encryptedKey = "암복호화키를 넣어주세용";
+
+// 암호화
+function encryptPassword(password, encryptedKey) {
+  var cipherText = cryptojs.AES.encrypt(password, encryptedKey).toString();
+  return cipherText;
+}
+
+// 복호화
+function decryptPassword(password, encryptedKey) {
+  var bytes = cryptojs.AES.decrypt(password, encryptedKey);
+  var originalText = bytes.toString(cryptojs.enc.Utf8);
+
+  return originalText;
+}
+
+var test_password = encryptPassword('123', encryptedKey);
+var test_password2 = encryptPassword('12', encryptedKey);
+var test_passwords = decryptPassword(test_password, encryptedKey);
+
+app.get('/a', async function (req, res) {
+  
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM user";
+  const [rows, fields] = await conn.query(query);
+  conn.release
+  res.send({test_password , test_passwords , test_password2});
+})
+
+
 // coupang main_post
 app.get('/main_post', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
@@ -138,21 +171,30 @@ app.get('/cart_add', async function (req, res) {
   res.json(rows);
 })
 
-// coupang log-in
-app.get('/coupang/user/login', async function (req, res) {
+// coupang login_data
+app.get('/coupang/user/login_data', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT * FROM user WHERE user_e_mail='${data.e_mail}' AND user_pw='${data.pw}' `;
+  var query = `SELECT * FROM user WHERE user_e_mail='${data.e_mail}' `;
   const [rows, fields] = await conn.query(query);
   conn.release();
+  console.log(data.e_mail, rows, rows.length)
  if(rows.length  === 1) {
   res.json([{ user_sno : rows[0].user_sno , user_nickname: rows[0].user_nickname , user_name: rows[0].user_name, user_phone: rows[0].user_phone , user_point: rows[0].user_point , user_e_mail: rows[0].user_e_mail ,is_success: true }])
  } else {
   res.json({is_success: false})
  }
 
+})
 
+// coupang log-in
+app.post('/coupang/user/login', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const email = req.body.form_e_mail
+  const pw = encryptPassword(req.body.form_pw , encryptedKey);
+  db.query(`SELECT * FROM user WHERE user_e_mail='${email}' AND user_pw='${pw}' `)
+  res.json( {is_success : true , email: email , key: pw})
 })
 
 // coupang arrive
@@ -249,25 +291,53 @@ app.post('/add_point', async function (req, res) {
 })
 
 // check adit
-app.get('/adit/check', async function (req, res) {
+// app.get('/adit/check', async function (req, res) {
+//   res.header("Access-Control-Allow-Origin","*");
+//   const data = req.query;
+//   let conn = await db.getConnection(async conn => conn);
+//   var query = `SELECT * FROM user WHERE user_pw='${data.pw}' AND user_e_mail='${data.e_mail}' `;
+//   const [rows, fields] = await conn.query(query);
+//   conn.release();
+//  if(rows.length  === 1) {
+//   res.json([{is_success: true }])
+//  } else {
+//   res.json({is_success: false})
+//  }
+// })
+
+app.post('/adit/check', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
-  const data = req.query;
-  let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT * FROM user WHERE user_pw='${data.pw}' AND user_e_mail='${data.e_mail}' `;
-  const [rows, fields] = await conn.query(query);
-  conn.release();
- if(rows.length  === 1) {
+  const e_mail =req.body.e_mail;
+  const pw = req.body.pw;
+  db.query(`SELECT * FROM user WHERE user_pw='${pw}' AND user_e_mail='${e_mail}' `)
   res.json([{is_success: true }])
- } else {
-  res.json({is_success: false})
- }
 })
 
+// adit pw
+app.post('/adit/pw', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const nowpw = req.body.nowpw;
+  const newpw = req.body.newpw;
+  console.log(req.body)
+  db.query("UPDATE `user`" +  `SET user_pw = ${newpw} WHERE user_pw = ${nowpw} AND user_sno = ${req.body.usernum}`)
+  res.json([{is_success: true }])
+})
 
+// adit email
+app.post('/adit/email', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  console.log(req.body)
+  db.query("UPDATE `user`" +  `SET user_e_mail = ${req.body.newemail} WHERE user_sno = ${req.body.usernum}`)
+  res.json([{is_success: true }])
+})
 
-
-
-
+// adit phon
+app.post('/adit/phon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  console.log(req.body)
+  db.query("UPDATE `user`" +  `SET user_phone = ${req.body.newphon} WHERE user_sno = ${req.body.usernum}`)
+  res.json([{is_success: true }])
+})
 
 
 
