@@ -171,30 +171,20 @@ app.get('/cart_add', async function (req, res) {
   res.json(rows);
 })
 
-// coupang login_data
-app.get('/coupang/user/login_data', async function (req, res) {
-  res.header("Access-Control-Allow-Origin","*");
-  const data = req.query;
-  let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT * FROM user WHERE user_e_mail='${data.e_mail}' `;
-  const [rows, fields] = await conn.query(query);
-  conn.release();
-  console.log(data.e_mail, rows, rows.length)
- if(rows.length  === 1) {
-  res.json([{ user_sno : rows[0].user_sno , user_nickname: rows[0].user_nickname , user_name: rows[0].user_name, user_phone: rows[0].user_phone , user_point: rows[0].user_point , user_e_mail: rows[0].user_e_mail ,is_success: true }])
- } else {
-  res.json({is_success: false})
- }
-
-})
-
 // coupang log-in
 app.post('/coupang/user/login', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const email = req.body.form_e_mail
   const pw = encryptPassword(req.body.form_pw , encryptedKey);
-  db.query(`SELECT * FROM user WHERE user_e_mail='${email}' AND user_pw='${pw}' `)
-  res.json( {is_success : true , email: email , key: pw})
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM user WHERE user_e_mail='${email}' AND user_pw='${decryptPassword(pw, encryptedKey)}' `
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+ if(rows.length  === 1) {
+  res.json([{ user_sno : rows[0].user_sno , user_nickname: rows[0].user_nickname , user_name: rows[0].user_name, user_phone: rows[0].user_phone , user_point: rows[0].user_point , user_e_mail: rows[0].user_e_mail ,is_success: true }])
+ } else {
+  res.json({is_success: false})
+ }
 })
 
 // coupang arrive
@@ -229,7 +219,7 @@ app.post('/coupang/user/add_order', async function (req, res) {
   }
 })
 
-// coupang_marketplace sign_up
+// coupang sign_up
 app.post('/coupang/sign_up', async function (req, res) {
   res.header("Access-Control-Allow-Origin","*");
   const e_mail = req.body.e_mail;
@@ -342,7 +332,169 @@ app.post('/adit/phon', async function (req, res) {
 
 
 
+// <------------------------------ admin --------------------------------------->
 
+// admin log-in
+app.post('/admin/login', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const id = req.body.form_id
+  const pw = encryptPassword(req.body.form_pw , encryptedKey);
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM admin WHERE admin_id='${id}' AND admin_pw='${req.body.form_pw}' `
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+ if(rows.length  === 1) {
+  res.json([{is_success: true , admin_sno : rows[0].admin_sno , admin_name: rows[0].admin_name, admin_phone: rows[0].admin_phone , admin_id: rows[0].admin_id}])
+} else {
+  res.json([{is_success: false}])
+ }
+})
+
+
+// <------------------------------ admin data list --------------------------------------->
+
+// admin adminlist
+app.get('/admin/adminlist', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM `admin` AS A" ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// admin userlist
+app.get('/admin/userlist', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM `user` AS A" ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// admin product
+app.get('/admin/product', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT A.name , A.price, B.delivery, A.list_image, A.scope, A.review, A.discount FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno LEFT JOIN notation AS D ON A.notation = D.sno`
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+
+  res.json(rows)
+})
+
+// admin user order
+app.get('/admin/user/order', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "SELECT * FROM `order`" ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// admin coupon_list
+app.get('/admin/coupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM coupon AS A` ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// admin coupon_uselist
+app.get('/admin/usecoupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `SELECT * FROM usecoupon AS A Left Join coupon AS B On A.coupon_sno = B.coupon_sno` ;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// <------------------------------ admin delete --------------------------------------->
+
+// adminlist delete
+app.post('/admin/adminlist/delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `DELETE FROM admin WHERE admin_sno=${req.body.sno}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+app.post('/admin/userlist/delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "DELETE FROM `user`" + `WHERE user_sno=${req.body.sno}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+app.post('/admin/product/delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `DELETE FROM product WHERE sno=${req.body.sno}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+app.post('/admin/user/order/delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = "DELETE FROM `order`" + `WHERE sno=${req.body.sno}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+app.post('/admin/coupon/delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `DELETE FROM coupon WHERE coupon_sno=${req.body.sno}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+app.post('/admin/usecoupon/delete', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","*");
+  const data = req.query;
+  let conn = await db.getConnection(async conn => conn);
+  var query = `DELETE FROM usecoupon WHERE usecoupon_sno=${req.body.sno}`;
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json(rows);
+})
+
+// <------------------------------ insert delete --------------------------------------->
+
+// coupang sign_up
+app.post('/admin/insert/adminlist', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const id = req.body.insert_o;
+  const pw = req.body.insert_t;
+  const name = req.body.insert_s;
+  const phone = req.body.insert_f;
+  db.query("insert into admin (admin_id, admin_pw, admin_name, admin_phone ) VALUES " + `( '${id}' , '${pw}', '${name}','${phone}') `)
+  
+})
 
 // usecoupon
 // app.post('/coupang/coupon', async function (req, res) {
@@ -398,7 +550,7 @@ app.get('/', async function (req, res, next) {
   respond = "뿜빠삐삐"
   next()
 }, function A (req , res) {
-  res.send( respond + 'Hello world! aa');
+  res.send(( "aa"));
 } )
 
 // app.get('/user/list', function (req, res) {
