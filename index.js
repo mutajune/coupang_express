@@ -380,7 +380,7 @@ app.get('/admin/product', async function (req, res) {
   res.header("Access-Control-Allow-Origin","http://localhost:3002");
   const data = req.query;
   let conn = await db.getConnection(async conn => conn);
-  var query = `SELECT A.name , A.price, B.delivery, A.list_image, A.scope, A.review, A.discount FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno LEFT JOIN notation AS D ON A.notation = D.sno`
+  var query = `SELECT A.sno , A.category, A.name , A.price, B.delivery, A.list_image, A.scope, A.review, A.discount FROM product AS A LEFT JOIN delivery AS B ON A.delivery = B.sno LEFT JOIN category AS C ON A.category = C.sno LEFT JOIN notation AS D ON A.notation = D.sno`
   const [rows, fields] = await conn.query(query);
   conn.release();
 
@@ -430,7 +430,7 @@ app.post('/admin/adminlist/delete', async function (req, res) {
   var query = `DELETE FROM admin WHERE admin_sno=${req.body.sno}`;
   const [rows, fields] = await conn.query(query);
   conn.release();
-  res.json(rows);
+  res.json([{is_success: true}]);
 })
 
 app.post('/admin/userlist/delete', async function (req, res) {
@@ -440,7 +440,7 @@ app.post('/admin/userlist/delete', async function (req, res) {
   var query = "DELETE FROM `user`" + `WHERE user_sno=${req.body.sno}`;
   const [rows, fields] = await conn.query(query);
   conn.release();
-  res.json(rows);
+  res.json([{is_success: true}]);
 })
 
 app.post('/admin/product/delete', async function (req, res) {
@@ -450,7 +450,7 @@ app.post('/admin/product/delete', async function (req, res) {
   var query = `DELETE FROM product WHERE sno=${req.body.sno}`;
   const [rows, fields] = await conn.query(query);
   conn.release();
-  res.json(rows);
+  res.json([{is_success: true}]);
 })
 
 app.post('/admin/user/order/delete', async function (req, res) {
@@ -460,7 +460,7 @@ app.post('/admin/user/order/delete', async function (req, res) {
   var query = "DELETE FROM `order`" + `WHERE sno=${req.body.sno}`;
   const [rows, fields] = await conn.query(query);
   conn.release();
-  res.json(rows);
+  res.json([{is_success: true}]);
 })
 
 app.post('/admin/coupon/delete', async function (req, res) {
@@ -470,7 +470,7 @@ app.post('/admin/coupon/delete', async function (req, res) {
   var query = `DELETE FROM coupon WHERE coupon_sno=${req.body.sno}`;
   const [rows, fields] = await conn.query(query);
   conn.release();
-  res.json(rows);
+  res.json([{is_success: true}]);
 })
 
 app.post('/admin/usecoupon/delete', async function (req, res) {
@@ -480,21 +480,172 @@ app.post('/admin/usecoupon/delete', async function (req, res) {
   var query = `DELETE FROM usecoupon WHERE usecoupon_sno=${req.body.sno}`;
   const [rows, fields] = await conn.query(query);
   conn.release();
-  res.json(rows);
+  res.json([{is_success: true}]);
 })
 
-// <------------------------------ insert delete --------------------------------------->
+// <------------------------------ insert to add --------------------------------------->
 
-// coupang sign_up
 app.post('/admin/insert/adminlist', async function (req, res) {
   res.header("Access-Control-Allow-Origin","http://localhost:3002");
-  const id = req.body.insert_o;
-  const pw = req.body.insert_t;
-  const name = req.body.insert_s;
-  const phone = req.body.insert_f;
-  db.query("insert into admin (admin_id, admin_pw, admin_name, admin_phone ) VALUES " + `( '${id}' , '${pw}', '${name}','${phone}') `)
-  
+  const id = req.body.insert_a;
+  const pw = req.body.insert_b;
+  const name = req.body.insert_c;
+  const phone = req.body.insert_d;
+  let conn = await db.getConnection(async conn => conn);
+  var query = ("insert into admin (admin_id, admin_pw, admin_name, admin_phone ) VALUES " + `( '${id}' , '${pw}', '${name}','${phone}') `)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
 })
+
+app.post('/admin/insert/userlist', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const id = req.body.insert_a;
+  const pw = req.body.insert_b;
+  const name = req.body.insert_c;
+  const phone = req.body.insert_d;
+  const birth = req.body.insert_e;  
+  const nickname = req.body.insert_f;
+    let conn = await db.getConnection(async conn => conn);
+  var query = ("insert into `user` (user_e_mail, user_pw, user_name, user_phone, user_birth, user_nickname ) VALUES " + `( '${id}' , '${pw}', '${name}','${phone}', '${birth}' , '${nickname}' ) `)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/insert/product', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const name = req.body.insert_a;
+  const category = req.body.insert_b;
+  const price = req.body.insert_c;
+  const delivery = req.body.insert_d;
+    let conn = await db.getConnection(async conn => conn);
+  var query = ("insert into product (name, category, price, delivery) VALUES " + `( '${name}' , '${category}', '${price}','${delivery}' ) `)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/insert/order', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const user = req.body.insert_a;
+  const product = req.body.insert_b;
+  const cnt = req.body.insert_c;
+  const price = req.body.insert_d;
+    let conn = await db.getConnection(async conn => conn);
+  var query = ("insert into `order` (user_sno, product_sno, order_cnt, order_price ) VALUES " + `( '${user}' , '${product}', '${cnt}','${price}' ) `)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/insert/coupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const num = req.body.insert_a;
+  const discount = req.body.insert_b;
+  const name = req.body.insert_c;
+    let conn = await db.getConnection(async conn => conn);
+  var query = ("insert into coupon (coupon_num, coupon_name, coupon_discount) VALUES " + `( '${num}' , '${name}','${discount}') `)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/insert/usecoupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const coupon = req.body.insert_a;
+  const user = req.body.insert_b;
+  let conn = await db.getConnection(async conn => conn);
+  var query = ("insert into usecoupon (coupon_sno, user_sno, usecoupon_use) VALUES " + `( '${coupon}' ,'${user}','Y') `)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+// <------------------------------ edit UPDATE --------------------------------------->
+
+app.post('/admin/update/adminlist', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const id = req.body.insert_a;
+  const pw = req.body.insert_b;
+  const name = req.body.insert_c;
+  const phone = req.body.insert_d;
+  const editnum = req.body.editnum;
+  let conn = await db.getConnection(async conn => conn);
+  var query = (`UPDATE admin SET admin_pw='${pw}', admin_name='${name}',  admin_phone='${phone}' WHERE admin_sno=${editnum}`)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/update/userlist', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const id = req.body.insert_a;
+  const pw = req.body.insert_b;
+  const name = req.body.insert_c;
+  const phone = req.body.insert_d;
+  const birth = req.body.insert_e;  
+  const nickname = req.body.insert_f;
+  const editnum = req.body.editnum;
+  let conn = await db.getConnection(async conn => conn);
+  var query = ("UPDATE `user`" + `SET user_e_mail='${id}', user_pw=${pw}, user_name='${name}', user_phone=${phone}, user_birth=${birth}, user_nickname='${nickname}' WHERE admin_sno=${editnum}`)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/update/product', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const name = req.body.insert_a;
+  const category = req.body.insert_b;
+  const price = req.body.insert_c;
+  const delivery = req.body.insert_d;
+  const editnum = req.body.editnum;
+  let conn = await db.getConnection(async conn => conn);
+  var query = ("UPDATE `product`" + `SET  name='${name}', category=${category}, price=${price}, delivery='${delivery}', WHERE sno=${editnum}`)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/update/order', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const user = req.body.insert_a;
+  const product = req.body.insert_b;
+  const cnt = req.body.insert_c;
+  const price = req.body.insert_d;
+  const editnum = req.body.editnum;
+  let conn = await db.getConnection(async conn => conn);
+  var query = ("UPDATE `order`" + `SET  user_sno=${user}, product_sno=${product}, order_cnt=${cnt}, order_price=${price} WHERE sno=${editnum}`)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
+app.post('/admin/update/coupon', async function (req, res) {
+  res.header("Access-Control-Allow-Origin","http://localhost:3002");
+  const num = req.body.insert_a;
+  const discount = req.body.insert_b;
+  const name = req.body.insert_c;
+  const use = req.body.insert_d;
+  const editnum = req.body.editnum;
+  let conn = await db.getConnection(async conn => conn);
+  var query = ("UPDATE `coupon` " + `SET coupon_num=${num}, coupon_name='${name}', coupon_discount=${discount}, coupon_use='${use}' WHERE coupon_sno=${editnum}`)
+  const [rows, fields] = await conn.query(query);
+  conn.release();
+  res.json([{is_success: true}]);
+
+})
+
 
 // usecoupon
 // app.post('/coupang/coupon', async function (req, res) {
